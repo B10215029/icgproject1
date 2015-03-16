@@ -1,0 +1,8 @@
+*.sdf
+*.suo
+ipch/
+Win32/
+Qt_Opengl_Framework/Debug/
+Qt_Opengl_Framework/Release/
+Qt_Opengl_Framework/GeneratedFiles/
+*.user

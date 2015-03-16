@@ -6,8 +6,6 @@
 #include <QtWidgets/QLineEdit>
 #include <QtWidgets/QPushButton>
 
-
-
 class Ui_MyMessageBox :public QWidget
 {
 	Q_OBJECT

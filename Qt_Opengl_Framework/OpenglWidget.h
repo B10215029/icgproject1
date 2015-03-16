@@ -3,17 +3,7 @@
 
 #include <QtGui>
 #include <QtWidgets/QtWidgets>
-
-#include <stdio.h>
-
-#include <fcntl.h>
-
-#include <io.h>
-
 #include <iostream>
-
-#include <fstream>
-#include "ClassDefine.h"
 
 class OpenglWidget : public QWidget
 {
@@ -22,7 +12,7 @@ class OpenglWidget : public QWidget
 public:
 	OpenglWidget(QWidget *parent = 0);
 	~OpenglWidget();
-	bool mShutDown;
+	//bool mShutDown;
 	QImage image;
 
 public slots:
@@ -34,7 +24,6 @@ protected:
 	virtual void moveEvent(QMoveEvent *e);
 	virtual void mouseDoubleClickEvent(QMouseEvent *e);
 	virtual void mouseMoveEvent(QMouseEvent *e);
-
 	virtual void mousePressEvent(QMouseEvent *e);
 	virtual void mouseReleaseEvent(QMouseEvent *e);
 	virtual void paintEvent(QPaintEvent *e);
@@ -50,10 +39,8 @@ protected:
 	static const QPoint invalidMousePoint;
 
 private:
-	
 
 protected:
-	
 	QPoint oldPos;
 };
 

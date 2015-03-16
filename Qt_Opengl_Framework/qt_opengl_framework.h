@@ -7,7 +7,7 @@
 #include "ui_About.h"
 #include "Application.h"
 #include "MB.h"
-#include "OpenglRenderThread.h"
+//#include "OpenglRenderThread.h"
 
 class Qt_Opengl_Framework : public QMainWindow
 {
@@ -18,14 +18,14 @@ public:
 	~Qt_Opengl_Framework();
 	static Qt_Opengl_Framework* getInstance();
 
-    std::string     plugin;
+    //std::string     plugin;
     QDialog*        rendere_dialog;
     QDialog*        About_dialog;
     Ui_Dialog       rendere_prompt;
     Ui_About        mAbout;
 	Ui_MyMessageBox *MBOX;
-    QLabel*         status_text;
-    QLabel*         fps_text;
+    //QLabel*         status_text;
+    //QLabel*         fps_text;
 	Ui::Qt_Opengl_FrameworkClass ui;
     QString         Nowfilename;
 	
@@ -37,8 +37,6 @@ private:
 
     Application*    application;
 	static Qt_Opengl_Framework *single;
-	OpenglRenderThread rt;
-	
 
 private slots:
 	void a_GL();

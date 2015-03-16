@@ -1,6 +1,6 @@
 #pragma once
-#include <OpenglWidget.h>
-
+#include "OpenglWidget.h"
+class Qt_Opengl_Framework;
 class Stroke { // Data structure for holding painterly strokes.
 public:
 	Stroke(void);

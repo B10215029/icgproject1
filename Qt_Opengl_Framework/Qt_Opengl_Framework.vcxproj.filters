@@ -47,9 +47,6 @@
     <ClCompile Include="qt_opengl_framework.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="OpenglRenderThread.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="OpenglWidget.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -68,22 +65,13 @@
     <CustomBuild Include="qt_opengl_framework.ui">
       <Filter>Form Files</Filter>
     </CustomBuild>
-    <CustomBuild Include="OpenglRenderThread.h">
-      <Filter>Header Files</Filter>
-    </CustomBuild>
     <CustomBuild Include="OpenglWidget.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
-    <ClInclude Include="ClassDefine.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Application.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClCompile Include="GeneratedFiles\Debug\moc_MB.cpp">
-      <Filter>Generated Files\Debug</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Debug\moc_OpenglRenderThread.cpp">
       <Filter>Generated Files\Debug</Filter>
     </ClCompile>
     <ClCompile Include="GeneratedFiles\Debug\moc_OpenglWidget.cpp">
@@ -96,9 +84,6 @@
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
     <ClCompile Include="GeneratedFiles\Release\moc_qt_opengl_framework.cpp">
-      <Filter>Generated Files\Release</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Release\moc_OpenglRenderThread.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
     <ClCompile Include="GeneratedFiles\Release\moc_OpenglWidget.cpp">

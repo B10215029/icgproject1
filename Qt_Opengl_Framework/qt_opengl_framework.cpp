@@ -1,18 +1,14 @@
 #include "qt_opengl_framework.h"
+
 Qt_Opengl_Framework* Qt_Opengl_Framework::single = NULL;
+
 Qt_Opengl_Framework* Qt_Opengl_Framework::getInstance()
 {
-	if(! single)
-	{
+	if(! single){
 		single = new Qt_Opengl_Framework();
-		single->Initialize();
-		//instanceFlag = true;
-		return single;
+		//single->Initialize();
 	}
-	else
-	{
-		return single;
-	}
+	return single;
 }
 //****************************************************************************
 //
@@ -20,11 +16,12 @@ Qt_Opengl_Framework* Qt_Opengl_Framework::getInstance()
 // 連動主功能視窗的Qt與Opengl動作
 //============================================================================
 
-Qt_Opengl_Framework::Qt_Opengl_Framework(QWidget *parent)
-	: QMainWindow(parent)
+Qt_Opengl_Framework::Qt_Opengl_Framework(QWidget *parent):QMainWindow(parent)
 {
 	application = NULL;
 	ui.setupUi(this);
+	application = new Application;
+	application->setMouseTracking(true);
 	//File
 	connect(ui.actionOpen, SIGNAL(triggered()), this, SLOT(OnOpen()));
 	connect(ui.actionSave, SIGNAL(triggered()), this, SLOT(OnSave()));
@@ -37,7 +34,7 @@ Qt_Opengl_Framework::Qt_Opengl_Framework(QWidget *parent)
 	//Dithering
 	connect(ui.actionNaive_Threshold_Dithering, SIGNAL(triggered()), this, SLOT(OnDither_Threshold()));
 	connect(ui.actionBrightness_Preserving_Threshold_Dithering, SIGNAL(triggered()), this, SLOT(OnDither_Bright()));
-	connect(ui.actionRandom, SIGNAL(triggered()), this, SLOT(OnDither_Cluster()));
+	connect(ui.actionRandom, SIGNAL(triggered()), this, SLOT(OnDither_Random()));
 	connect(ui.actionClustered, SIGNAL(triggered()), this, SLOT(OnDither_Cluster()));
 	connect(ui.actionFloyd_Steinberg, SIGNAL(triggered()), this, SLOT(OnDither_FS()));
 	connect(ui.actionColor_Floyd_Steinberg, SIGNAL(triggered()), this, SLOT(OnDither_Color()));
@@ -86,7 +83,6 @@ void Qt_Opengl_Framework::Initialize()
 	connect(rendere_prompt.GLButton, SIGNAL(clicked()), this, SLOT(a_GL()));
 	connect(rendere_prompt.DirectXButton, SIGNAL(clicked()), this, SLOT(a_DirectX()));
 }
-
 //****************************************************************************
 //
 // * 設定Rendering System為OpenGL時
@@ -94,12 +90,11 @@ void Qt_Opengl_Framework::Initialize()
 //============================================================================
 void Qt_Opengl_Framework::a_GL()
 {
-	plugin =("OpenGL Rendering Subsystem");
+	//plugin =("OpenGL Rendering Subsystem");
 	application = new Application;
 	application->setMouseTracking(true);
 	rendere_dialog->hide();
 }
-
 //****************************************************************************
 //
 // * 設定Rendering System為DirectX時
@@ -107,7 +102,7 @@ void Qt_Opengl_Framework::a_GL()
 //============================================================================
 void Qt_Opengl_Framework::a_DirectX()
 {
-	plugin =("Direct3D9 Rendering Subsystem");
+	//plugin =("Direct3D9 Rendering Subsystem");
 	application = new Application;
 	application->setMouseTracking(true);
 	rendere_dialog->hide();
@@ -121,7 +116,6 @@ void Qt_Opengl_Framework::a_DirectX()
 void Qt_Opengl_Framework::loadFile(const QString &fileName)
 {
 	QFile file(fileName);
-
 	if (!file.open(QFile::ReadOnly | QFile::Text)) {
 		QMessageBox::warning(this, tr("Application"),
 			tr("Cannot read file %1:\n%2.")
@@ -129,16 +123,11 @@ void Qt_Opengl_Framework::loadFile(const QString &fileName)
 			.arg(file.errorString()));
 		return;
 	}
-
 	QTextStream in(&file);
 #ifndef QT_NO_CURSOR
 	QApplication::setOverrideCursor(Qt::WaitCursor);
-#endif
-	
-#ifndef QT_NO_CURSOR
 	QApplication::restoreOverrideCursor();
 #endif
-
 	application->openImage(fileName);
 }
 
@@ -150,7 +139,6 @@ void Qt_Opengl_Framework::loadFile(const QString &fileName)
 void Qt_Opengl_Framework::loadSecondFile( const QString &fileName )
 {
 	QFile file(fileName);
-
 	if (!file.open(QFile::ReadOnly | QFile::Text)) {
 		QMessageBox::warning(this, tr("Application"),
 			tr("Cannot read file %1:\n%2.")
@@ -158,16 +146,11 @@ void Qt_Opengl_Framework::loadSecondFile( const QString &fileName )
 			.arg(file.errorString()));
 		return;
 	}
-
 	QTextStream in(&file);
 #ifndef QT_NO_CURSOR
 	QApplication::setOverrideCursor(Qt::WaitCursor);
-#endif
-	
-#ifndef QT_NO_CURSOR
 	QApplication::restoreOverrideCursor();
 #endif
-
 	application->loadSecondaryImge(fileName);
 }
 
@@ -180,7 +163,6 @@ void Qt_Opengl_Framework::loadSecondFile( const QString &fileName )
 //============================================================================
 void Qt_Opengl_Framework::OnOpen()
 {
-
 	QString fileName = QFileDialog::getOpenFileName(this,"OpenImage","../../media/materials/textures", tr("PNG (*.png);;JPEG (*.jpg)" ));
 	if (!fileName.isEmpty()){
 		loadFile(fileName);
@@ -217,7 +199,7 @@ void Qt_Opengl_Framework::OnQuit()
 //============================================================================
 void Qt_Opengl_Framework::OnAbout()
 {
-	About_dialog->show();
+	//About_dialog->show();
 }
 //------------------------Color------------------------
 
@@ -230,7 +212,6 @@ void Qt_Opengl_Framework::OnGray()
 {
 	application->Gray();
 }
-
 //****************************************************************************
 //
 // * 連動GUI按鈕至Uniform Quantization功能
@@ -240,7 +221,6 @@ void Qt_Opengl_Framework::OnQuant_Uniform()
 {
 	application->Quant_Uniform();
 }
-
 //****************************************************************************
 //
 // * 連動GUI按鈕至Populosity功能
@@ -250,8 +230,6 @@ void Qt_Opengl_Framework::OnQuant_Populosity()
 {
 	application->Quant_Populosity();
 }
-
-
 
 //------------------------Dithering------------------------
 
@@ -356,7 +334,6 @@ void Qt_Opengl_Framework::OnFilter_Gaussian_N()
 //============================================================================
 void Qt_Opengl_Framework::OnFilter_Edge()
 {
-	
 	application->Filter_Edge();
 }
 //****************************************************************************
@@ -366,7 +343,6 @@ void Qt_Opengl_Framework::OnFilter_Edge()
 //============================================================================
 void Qt_Opengl_Framework::OnFilter_Enhance()
 {
-	
 	application->Filter_Enhance();
 }
 
@@ -425,7 +401,6 @@ void Qt_Opengl_Framework::OnComp_Over()
 		loadSecondFile(fileName);
 		application->Comp_Over();
 	}
-	
 }
 //****************************************************************************
 //
@@ -434,14 +409,11 @@ void Qt_Opengl_Framework::OnComp_Over()
 //============================================================================
 void Qt_Opengl_Framework::OnComp_In()
 {
-
 	QString fileName = QFileDialog::getOpenFileName(this,"OpenImage","/Qt_Opengl_Framework/media/materials/textures", tr("PNG (*.png);;JPEG (*.jpg)" ));
 	if (!fileName.isEmpty()){
 		loadSecondFile(fileName);
 		application->Comp_In();
 	}
-
-	
 }
 //****************************************************************************
 //
@@ -455,8 +427,6 @@ void Qt_Opengl_Framework::OnComp_Out()
 		loadSecondFile(fileName);
 		application->Comp_Out();
 	}
-
-	
 }
 //****************************************************************************
 //
@@ -470,8 +440,6 @@ void Qt_Opengl_Framework::OnComp_Atop()
 		loadSecondFile(fileName);
 		application->Comp_Atop();
 	}
-
-	
 }
 //****************************************************************************
 //
@@ -485,8 +453,6 @@ void Qt_Opengl_Framework::OnComp_Xor()
 		loadSecondFile(fileName);
 		application->Comp_Xor();
 	}
-
-	
 }
 
 

@@ -3,9 +3,7 @@
 
 const QPoint     OpenglWidget::invalidMousePoint(-1,-1);
 
-OpenglWidget::OpenglWidget(QWidget *parent)
-:QWidget(parent),
- oldPos(invalidMousePoint)
+OpenglWidget::OpenglWidget(QWidget *parent):QWidget(parent), oldPos(invalidMousePoint)
 {
 	setAttribute(Qt::WA_OpaquePaintEvent);
 	setAttribute(Qt::WA_PaintOnScreen);
@@ -18,8 +16,6 @@ OpenglWidget::~OpenglWidget()
 {
 
 }
-
-
 void OpenglWidget::keyPressEvent(QKeyEvent *e)
 {
 
@@ -28,22 +24,18 @@ void OpenglWidget::keyReleaseEvent( QKeyEvent *e )
 {
 
 }
-
 void OpenglWidget::mouseDoubleClickEvent(QMouseEvent *e)
 {
 
 }
-
 void OpenglWidget::mouseMoveEvent(QMouseEvent *e)
 {
 
 }
-
 void OpenglWidget::mousePressEvent(QMouseEvent *e)
 {
 
 }
-
 void OpenglWidget::mouseReleaseEvent(QMouseEvent *e)
 {
 
@@ -91,19 +83,17 @@ void OpenglWidget::wheelEvent(QWheelEvent *e)
 {
 
 }
-
 void OpenglWidget::initOpenglSystem()
 {
-	bool ok = false;
-	Qt_Opengl_Framework* w = Qt_Opengl_Framework::getInstance();
-	std::string  desiredRenderer = w->plugin;
+// 	bool ok = false;
+// 	Qt_Opengl_Framework* w = Qt_Opengl_Framework::getInstance();
+// 	std::string  desiredRenderer = w->plugin;
 	
 }
 void OpenglWidget::startApp()
 {
 
 }
-
 void OpenglWidget::setupNLoadResources()
 {
 	
