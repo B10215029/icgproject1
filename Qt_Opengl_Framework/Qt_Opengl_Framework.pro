@@ -11,17 +11,12 @@ TEMPLATE = app
 CONFIG += release
 
 HEADERS += ./Application.h \
-    ./ClassDefine.h \
     ./qt_opengl_framework.h \
     ./OpenglWidget.h \
-    ./MB.h \
-    ./OpenglRenderThread.h
+    ./MB.h
 SOURCES += ./Application.cpp \
     ./main.cpp \
     ./MB.cpp \
-    ./OpenglRenderThread.cpp \
     ./OpenglWidget.cpp \
     ./qt_opengl_framework.cpp
-FORMS += ./qt_opengl_framework.ui \
-    ./prompt.ui \
-    ./About.ui
+FORMS += ./qt_opengl_framework.ui

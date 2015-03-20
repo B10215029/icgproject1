@@ -65,7 +65,7 @@ Qt_Opengl_Framework::~Qt_Opengl_Framework()
 {
 
 }
-
+/*
 //****************************************************************************
 //
 // * 初始化表單 
@@ -107,7 +107,7 @@ void Qt_Opengl_Framework::a_DirectX()
 	application->setMouseTracking(true);
 	rendere_dialog->hide();
 }
-
+*/
 //****************************************************************************
 //
 // * 當使用者使用Open圖檔功能時，所呼叫的載入檔案函數
@@ -524,12 +524,3 @@ void Qt_Opengl_Framework::keyPressEvent(QKeyEvent *e)
 		loadFile(Nowfilename);
 	}
 }
-
-
-
-
-
-
-
-
-

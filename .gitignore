@@ -5,4 +5,6 @@ Win32/
 Qt_Opengl_Framework/Debug/
 Qt_Opengl_Framework/Release/
 Qt_Opengl_Framework/GeneratedFiles/
+build*/
+Qt_Opengl_Framework/*.png
 *.user

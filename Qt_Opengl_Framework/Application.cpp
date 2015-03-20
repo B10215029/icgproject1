@@ -1,6 +1,7 @@
 #include "Application.h"
 #include "qt_opengl_framework.h"
 #include <vector>
+#include <iostream>
 
 Application::Application()
 {
@@ -9,6 +10,30 @@ Application::Application()
 Application::~Application()
 {
 
+}
+void quick_sort(int d[],int b,int t,int data[]){
+	if(b<t){
+		int n=b,i,temp;
+        for(i=b;i<t;i++){
+			if(d[i]>d[t]){
+				temp=d[i];
+				d[i]=d[n];
+				d[n]=temp;
+				temp=data[i];
+				data[i]=data[n];
+				data[n]=temp;
+				n++;
+			}
+		}
+		temp=d[t];
+		d[t]=d[n];
+		d[n]=temp;
+		temp=data[i];
+		data[i]=data[n];
+		data[n]=temp;
+		quick_sort(d,b,n-1,data);
+		quick_sort(d,n+1,t,data);
+	}
 }
 //****************************************************************************
 //
@@ -177,7 +202,19 @@ void Application::Gray()
 void Application::Quant_Uniform()
 {
 	unsigned char *rgb = this->To_RGB();
+	for (int i=0; i<img_height; i++)
+	{
+		for (int j=0; j<img_width; j++)
+		{
+			int offset_rgb = i*img_width*3+j*3;
+			int offset_rgba = i*img_width*4+j*4;
 
+            img_data[offset_rgba + rr] = rgb[offset_rgb + rr]&~31;//delete 5bit
+            img_data[offset_rgba + gg] = rgb[offset_rgb + gg]&~31;//delete 5bit
+            img_data[offset_rgba + bb] = rgb[offset_rgb + bb]&~64;//delete 6bit
+			img_data[offset_rgba + aa] = WHITE;
+		}
+	}
 
 	delete[] rgb;
 	mImageDst = QImage(img_data, img_width, img_height, QImage::Format_ARGB32 );
@@ -192,9 +229,47 @@ void Application::Quant_Uniform()
 void Application::Quant_Populosity()
 {
 	unsigned char *rgb = this->To_RGB();
-
-
-
+    //初始化統計用資料
+    int histogram[32768]={};//記錄次數
+    int histogramData[32768];//記錄顏色
+	for(int i=0;i<32768;++i)
+		histogramData[i]=i;
+    //開始統計
+	for (int i=0; i<img_height; i++){
+		for (int j=0; j<img_width; j++){
+			++histogram[
+				((rgb[i*img_width*3+j*3 + rr]&~7)<<7) +
+				((rgb[i*img_width*3+j*3 + gg]&~7)<<2) +
+				((rgb[i*img_width*3+j*3 + bb]&~7)>>3)
+            ];//去掉最後三個位元節省空間同時把三個顏色合成一個值
+        }
+    }
+    //依數量多寡由大到小排
+    quick_sort(histogram,0,32767,histogramData);
+    //決定每個pixel的顏色
+	for (int i=0; i<img_height; i++){
+		for (int j=0; j<img_width; j++){
+			int offset_rgb = i*img_width*3+j*3;
+            int offset_rgba = i*img_width*4+j*4;
+            int nearColor=0;//最接近的顏色
+            double len=262144;//跟最接近的顏色的距離
+            for (int k=0;k<256;k++)	{//只與最高票的256色比
+				int rl=((histogramData[k]>>7)&248)-rgb[offset_rgb + rr];
+				int gl=((histogramData[k]>>2)&248)-rgb[offset_rgb + gg];
+				int bl=((histogramData[k]<<3)&248)-rgb[offset_rgb + bb];
+				double l=rl*rl+gl*gl+bl*bl;
+                if(l<len){
+					len=l;
+					nearColor=histogramData[k];
+				}
+			}
+            //把接成一個值的資料還原成三個值
+			img_data[offset_rgba + rr] = ((nearColor>>7)&248);
+			img_data[offset_rgba + gg] = ((nearColor>>2)&248);
+            img_data[offset_rgba + bb] = ((nearColor<<3)&248);
+			img_data[offset_rgba + aa] = WHITE;
+		}
+	}
 	delete[] rgb;
 	mImageDst = QImage(img_data, img_width, img_height, QImage::Format_ARGB32 );
 	renew();
@@ -645,6 +720,3 @@ Stroke::Stroke(unsigned int iradius, unsigned int ix, unsigned int iy,
 radius(iradius),x(ix),y(iy),r(ir),g(ig),b(ib),a(ia)
 {
 }
-
-
-

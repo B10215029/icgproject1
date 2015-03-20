@@ -3,8 +3,8 @@
 
 #include <QtWidgets/QMainWindow>
 #include "ui_qt_opengl_framework.h"
-#include "ui_prompt.h"
-#include "ui_About.h"
+//#include "ui_prompt.h"
+//#include "ui_About.h"
 #include "Application.h"
 #include "MB.h"
 //#include "OpenglRenderThread.h"
@@ -21,8 +21,8 @@ public:
     //std::string     plugin;
     QDialog*        rendere_dialog;
     QDialog*        About_dialog;
-    Ui_Dialog       rendere_prompt;
-    Ui_About        mAbout;
+    //Ui_Dialog       rendere_prompt;
+    //Ui_About        mAbout;
 	Ui_MyMessageBox *MBOX;
     //QLabel*         status_text;
     //QLabel*         fps_text;
@@ -39,8 +39,8 @@ private:
 	static Qt_Opengl_Framework *single;
 
 private slots:
-	void a_GL();
-	void a_DirectX();
+	//void a_GL();
+	//void a_DirectX();
 	void mMyBox();
 	void mMyBox1();
 	void mMyBox2();
