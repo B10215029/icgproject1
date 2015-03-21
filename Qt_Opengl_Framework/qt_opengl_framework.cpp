@@ -59,6 +59,7 @@ Qt_Opengl_Framework::Qt_Opengl_Framework(QWidget *parent):QMainWindow(parent)
 	// Bouns
 	connect(ui.actionNPR, SIGNAL(triggered()), this, SLOT(OnNPR()));
 
+    //loadFile("C:\\Users\\Delin\\Desktop\\icgproject1\\Qt_Opengl_Framework\\NTUST.png");
 }
 
 Qt_Opengl_Framework::~Qt_Opengl_Framework()

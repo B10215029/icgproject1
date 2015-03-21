@@ -31,8 +31,8 @@ public:
 	
 
 private:
-	void Initialize();
-	void loadFile(const QString &fileName);
+    void Initialize();
+    void loadFile(const QString &fileName);
 	void loadSecondFile(const QString &fileName);
 
     Application*    application;

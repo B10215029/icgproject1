@@ -86,7 +86,8 @@ protected:
 	int img_height,img_height2;
 
 	// you should swap the rr and bb if you read img_data directly without using To_RGB(), cause OGRE is in BGR format
-	enum {rr, gg, bb, aa}; 
+    //enum {rr, gg, bb, aa};
+    enum {bb, gg, rr, aa};
 	enum {BLACK = 0, WHITE = 255};
 
 	

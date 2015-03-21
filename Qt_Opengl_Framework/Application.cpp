@@ -1,7 +1,8 @@
 #include "Application.h"
 #include "qt_opengl_framework.h"
-#include <vector>
+//#include <vector>
 #include <iostream>
+#include <cstdlib>
 
 Application::Application()
 {
@@ -11,7 +12,7 @@ Application::~Application()
 {
 
 }
-void quick_sort(int d[],int b,int t,int data[]){
+void sort(int d[],int b,int t,int data[]){
 	if(b<t){
 		int n=b,i,temp;
         for(i=b;i<t;i++){
@@ -31,8 +32,8 @@ void quick_sort(int d[],int b,int t,int data[]){
 		temp=data[i];
 		data[i]=data[n];
 		data[n]=temp;
-		quick_sort(d,b,n-1,data);
-		quick_sort(d,n+1,t,data);
+        sort(d,b,n-1,data);
+        sort(d,n+1,t,data);
 	}
 }
 //****************************************************************************
@@ -43,8 +44,7 @@ void quick_sort(int d[],int b,int t,int data[]){
 void Application::createScene( void )
 {
 	
-	ui_instance = Qt_Opengl_Framework::getInstance();
-	
+    ui_instance = Qt_Opengl_Framework::getInstance();
 }
 
 //****************************************************************************
@@ -245,7 +245,7 @@ void Application::Quant_Populosity()
         }
     }
     //依數量多寡由大到小排
-    quick_sort(histogram,0,32767,histogramData);
+    sort(histogram,0,32767,histogramData);
     //決定每個pixel的顏色
 	for (int i=0; i<img_height; i++){
 		for (int j=0; j<img_width; j++){
@@ -285,8 +285,16 @@ void Application::Quant_Populosity()
 void Application::Dither_Threshold()
 {
 	unsigned char *rgb = this->To_RGB();
-
-
+    for (int i=0; i<img_height*img_width; i++){
+        //變灰
+        unsigned char gray =
+                0.30 * rgb[i*3 + rr] +
+                0.59 * rgb[i*3 + gg] +
+                0.11 * rgb[i*3 + bb];
+        //變黑白
+        img_data[i*4 + rr] = img_data[i*4 + gg] = img_data[i*4 + bb] = gray>127?255:0;
+        img_data[i*4 + aa] = WHITE;
+    }
 
 	delete[] rgb;
 	mImageDst = QImage(img_data, img_width, img_height, QImage::Format_ARGB32 );
@@ -300,9 +308,25 @@ void Application::Dither_Threshold()
 void Application::Dither_Random()
 {
 	unsigned char *rgb = this->To_RGB();
-
-
-
+    for (int i=0; i<img_height*img_width; i++){
+        //變灰
+        unsigned char gray =
+                0.30 * rgb[i*3 + rr] +
+                0.59 * rgb[i*3 + gg] +
+                0.11 * rgb[i*3 + bb];
+        //取亂數(-50~50)
+        int randNum = ((float)rand()/RAND_MAX-0.5)*100;
+        //處理超界的值
+        if(gray + randNum < 0)
+            gray = 0;
+        else if(gray + randNum > 255)
+            gray = 255;
+        else
+            gray +=randNum;
+        //變黑白
+        img_data[i*4 + rr] = img_data[i*4 + gg] = img_data[i*4 + bb] = gray>127?255:0;
+        img_data[i*4 + aa] = WHITE;
+    }
 	delete[] rgb;
 	mImageDst = QImage(img_data, img_width, img_height, QImage::Format_ARGB32 );
 	renew();
@@ -316,9 +340,34 @@ void Application::Dither_Random()
 void Application::Dither_FS()
 {
 	unsigned char *rgb = this->To_RGB();
-
-
-
+    double *gray = new double[img_height*img_width];//儲存灰階的值
+    int direction = 1;//pixel前進的方向
+    for (int i=0; i<img_height*img_width; i++)//先把灰階的值存進去
+        gray[i] = 0.30 * rgb[i*3 + rr] + 0.59 * rgb[i*3 + gg] + 0.11 * rgb[i*3 + bb];
+    for (int i=0; i<img_height; i++,direction*=-1){//到下一行就轉一次方向
+        for (int j=(1-direction)/2*(img_width-1); j<img_width && j>=0; j+=direction){//依據方向算出起始點與前進
+            int offset_gray = i*img_width+j;
+            int offset_rgba = i*img_width*4+j*4;
+            //算出顏色
+            img_data[offset_rgba+rr] = gray[offset_gray]>127?255:0;
+            //計算error
+            double quantError = gray[offset_gray] - img_data[offset_rgba+rr];
+            //把error分給其他pixel
+            if(j+direction<img_width && j+direction>=0)//檢查邊界
+                gray[offset_gray+direction] += quantError * 7 / 16 ;
+            if(i!=img_height-1){
+                gray[offset_gray+img_width] += quantError * 5 / 16 ;
+                if(j+direction<img_width && j+direction>=0)
+                    gray[offset_gray+direction+img_width] += quantError * 1 / 16 ;
+                if(j-direction<img_width && j-direction>=0)
+                    gray[offset_gray-direction+img_width] += quantError * 3 / 16 ;
+            }
+            //變黑白
+            img_data[offset_rgba+gg] = img_data[offset_rgba+bb] = img_data[offset_rgba+rr];
+            img_data[offset_rgba + aa] = WHITE;
+        }
+    }
+    delete[] gray;
 	delete[] rgb;
 	mImageDst = QImage(img_data, img_width, img_height, QImage::Format_ARGB32 );
 	renew();
@@ -332,8 +381,32 @@ void Application::Dither_FS()
 void Application::Dither_Bright()
 {
 	unsigned char *rgb = this->To_RGB();
-
-
+    double whitePercent=0;//白色比率
+    int histogram[256]={};//儲存每個顏色的數量
+    //統計每個顏色的數量與白色的比例
+	for (int i=0; i<img_height*img_width; i++){
+            unsigned char gray =
+                    0.30 * rgb[i*3 + rr] +
+                    0.59 * rgb[i*3 + gg] +
+                    0.11 * rgb[i*3 + bb];
+			++histogram[gray];
+            whitePercent+=gray;
+    }
+    whitePercent = whitePercent/(img_height*img_width)/255;
+    int boundary = 255;//黑與白的邊界
+    int pixelCount = 0;//數了幾個點
+    //計算黑與白的邊界
+    while(pixelCount<whitePercent*img_height*img_width)
+        pixelCount+=histogram[boundary--];
+    //變黑白
+	for (int i=0; i<img_height*img_width; i++){
+        unsigned char gray =
+                0.30 * rgb[i*3 + rr] +
+                0.59 * rgb[i*3 + gg] +
+                0.11 * rgb[i*3 + bb];
+        img_data[i*4 + rr] = img_data[i*4 + gg] = img_data[i*4 + bb] = gray>boundary?255:0;
+        img_data[i*4 + aa] = WHITE;
+    }
 
 	delete[] rgb;
 	mImageDst = QImage(img_data, img_width, img_height, QImage::Format_ARGB32 );
@@ -346,9 +419,34 @@ void Application::Dither_Bright()
 ///////////////////////////////////////////////////////////////////////////////
 void Application::Dither_Cluster()
 {
-	unsigned char *rgb = this->To_RGB();
-
-
+    unsigned char *rgb = this->To_RGB();
+    int thresholdMatrix[16];//儲存Threshold Matrix值
+    int randomMatrix[16];//決定儲存Threshold Matrix順序用
+    //隨機取得Threshold Matrix順序
+    for(int i=0;i<16;i++){//
+        thresholdMatrix[i]=8+16*i;
+        randomMatrix[i] = rand();
+    }
+    sort(randomMatrix, 0, 15, thresholdMatrix);
+    //開始轉黑白
+    for(int i=0;i<img_height;i+=4){
+        for(int j=0;j<img_width;j+=4){
+            for(int k=0;k<16;k++){
+                //判斷是否有超界
+                if(k%4+j<img_width&&k/4+i<img_height){
+                    int offset = (i+k/4)*img_width+j+k%4;
+                    img_data[offset*4+rr] =
+                            img_data[offset*4+gg] =
+                            img_data[offset*4+bb] =
+                            0.30 * rgb[offset*3 + rr] +
+                            0.59 * rgb[offset*3 + gg] +
+                            0.11 * rgb[offset*3 + bb] >
+                            thresholdMatrix[k]?255:0;
+                    img_data[offset*4 + aa] = WHITE;
+                }
+            }
+        }
+    }
 
 	delete[] rgb;
 	mImageDst = QImage(img_data, img_width, img_height, QImage::Format_ARGB32 );
@@ -364,9 +462,38 @@ void Application::Dither_Cluster()
 void Application::Dither_Color()
 {
 	unsigned char *rgb = this->To_RGB();
+    double *buffer = new double[img_height*img_width];//儲存顏色的值
+    int direction = 1;//pixel前進的方向
+    unsigned char mask[3]={192,224,224};//每個顏色要留下那些bit
+    for(int colo=0;colo<3;colo++){//RGB分開做
+        direction = 1;
+        for (int i=0; i<img_height*img_width; i++)//先把顏色的值存進去
+            buffer[i] = rgb[i*3 + colo];
+        for (int i=0; i<img_height; i++,direction*=-1){//到下一行就轉一次方向
+            for (int j=(1-direction)/2*(img_width-1); j<img_width && j>=0; j+=direction){//依據方向算出起始點與前進
+                int offset = i*img_width+j;
+                //算出顏色
+                if(buffer[offset]>255||buffer[offset]<0)
+                    img_data[offset*4+colo] = buffer[offset]>255?255:0;
+                else
+                    img_data[offset*4+colo] = ((unsigned char)buffer[offset])&mask[colo];
+                //計算error
+                double quantError = buffer[offset] - img_data[offset*4+colo];
+                //把error分給其他pixel
+                if(j+direction<img_width && j+direction>=0)//檢查邊界
+                    buffer[offset+direction] += quantError * 7 / 16 ;
+                if(i!=img_height-1){
+                    buffer[offset+img_width] += quantError * 5 / 16 ;
+                    if(j+direction<img_width && j+direction>=0)
+                        buffer[offset+direction+img_width] += quantError * 1 / 16 ;
+                    if(j-direction<img_width && j-direction>=0)
+                        buffer[offset-direction+img_width] += quantError * 3 / 16 ;
+                }
+            }
+        }
+    }
 
-
-
+    delete[] buffer;
 	delete[] rgb;
 	mImageDst = QImage(img_data, img_width, img_height, QImage::Format_ARGB32 );
 	renew();

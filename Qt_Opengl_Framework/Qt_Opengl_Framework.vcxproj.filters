@@ -50,14 +50,8 @@
     <ClCompile Include="OpenglWidget.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <CustomBuild Include="prompt.ui">
-      <Filter>Form Files</Filter>
-    </CustomBuild>
     <CustomBuild Include="MB.h">
       <Filter>Header Files</Filter>
-    </CustomBuild>
-    <CustomBuild Include="About.ui">
-      <Filter>Form Files</Filter>
     </CustomBuild>
     <CustomBuild Include="qt_opengl_framework.h">
       <Filter>Header Files</Filter>
@@ -92,12 +86,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GeneratedFiles\ui_qt_opengl_framework.h">
-      <Filter>Generated Files</Filter>
-    </ClInclude>
-    <ClInclude Include="GeneratedFiles\ui_About.h">
-      <Filter>Generated Files</Filter>
-    </ClInclude>
-    <ClInclude Include="GeneratedFiles\ui_prompt.h">
       <Filter>Generated Files</Filter>
     </ClInclude>
   </ItemGroup>
