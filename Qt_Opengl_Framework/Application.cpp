@@ -1,8 +1,9 @@
 #include "Application.h"
 #include "qt_opengl_framework.h"
 //#include <vector>
-#include <iostream>
-#include <cstdlib>
+//#include <iostream>
+//#include <cstdlib>
+//#include <cmath>
 
 Application::Application()
 {
@@ -76,7 +77,7 @@ void Application::renew()
 	ui_instance = Qt_Opengl_Framework::getInstance();
 
 	ui_instance->ui.label->clear();
-	ui_instance->ui.label->setPixmap(QPixmap::fromImage(mImageDst));
+    ui_instance->ui.label->setPixmap(QPixmap::fromImage(mImageDst));
 
 	std::cout << "Renew" << std::endl;
 }
@@ -510,7 +511,30 @@ void Application::filtering( double filter[][5] )
 {
 	unsigned char *rgb = this->To_RGB();
 
-
+	for(int x=0;x<img_height;++x){//pixel位置
+		for(int y=0;y<img_width;++y){
+			for(int color=0;color<3;++color){//顏色
+				double sum = 0;
+				for(int row=0;row<5;++row){//周圍位置
+					for(int col=0;col<5;++col){
+						int rowPosition = x-2+row;
+						int colPosition = y-2+col;
+						if(rowPosition<0)//檢查是否超界(使用反射)
+							rowPosition = -rowPosition;
+						if(rowPosition>=img_height)
+							rowPosition = (img_height*2-2)-rowPosition;
+						if(colPosition<0)
+							colPosition = -colPosition;
+						if(colPosition>=img_width)
+							colPosition = (img_width*2-2)-colPosition;
+						sum += rgb[(rowPosition*img_width+colPosition)*3+color]*filter[row][col];//把顏色乘以權重並加起來
+					}
+				}
+				img_data[(x*img_width+y)*4+color] = sum;
+			}
+			img_data[(x*img_width+y)*4 + aa] = WHITE;
+		}
+	}
 
 	delete[] rgb;
 	mImageDst = QImage(img_data, img_width, img_height, QImage::Format_ARGB32 );
@@ -520,8 +544,33 @@ void Application::filtering( double filter[][5] )
 void Application::filtering( double **filter, int n )
 {
 	unsigned char *rgb = this->To_RGB();
-
-
+//同上
+	for(int x=0;x<img_height;++x){
+		for(int y=0;y<img_width;++y){
+			for(int color=0;color<3;++color){
+				double sum = 0;
+				for(int row=0;row<n;++row){
+					for(int col=0;col<n;++col){
+						int rowPosition = x-(n/2)+row;
+						int colPosition = y-(n/2)+col;
+						if(rowPosition<0)
+							rowPosition = -rowPosition;
+						if(rowPosition>=img_height)
+							rowPosition = (img_height*2-(n/2))-rowPosition;
+						if(colPosition<0)
+							colPosition = -colPosition;
+						if(colPosition>=img_width)
+							colPosition = (img_width*2-(n/2))-colPosition;
+						sum += rgb[(rowPosition*img_width+colPosition)*3+color]*filter[row][col];
+					}
+				}
+				img_data[(x*img_width+y)*4+color] = sum;
+				if(sum>255||sum<0)
+					img_data[(x*img_width+y)*4+color]=sum>255?255:0;
+			}
+			img_data[(x*img_width+y)*4 + aa] = WHITE;
+		}
+	}
 
 	delete[] rgb;
 	mImageDst = QImage(img_data, img_width, img_height, QImage::Format_ARGB32 );
@@ -534,7 +583,14 @@ void Application::filtering( double **filter, int n )
 ///////////////////////////////////////////////////////////////////////////////
 void Application::Filter_Box()
 {
-
+	double filter[5][5] = {
+		{1./25, 1./25, 1./25, 1./25, 1./25},
+		{1./25, 1./25, 1./25, 1./25, 1./25},
+		{1./25, 1./25, 1./25, 1./25, 1./25},
+		{1./25, 1./25, 1./25, 1./25, 1./25},
+		{1./25, 1./25, 1./25, 1./25, 1./25}
+	};
+    filtering(filter);
 }
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -544,7 +600,14 @@ void Application::Filter_Box()
 ///////////////////////////////////////////////////////////////////////////////
 void Application::Filter_Bartlett()
 {
-
+	double filter[5][5] = {
+		{1/81., 2/81., 3/81., 2/81., 1/81.},
+		{2/81., 4/81., 6/81., 4/81., 2/81.},
+		{3/81., 6/81., 9/81., 6/81., 3/81.},
+		{2/81., 4/81., 6/81., 4/81., 2/81.},
+		{1/81., 2/81., 3/81., 2/81., 1/81.}
+	};
+	filtering(filter);
 }
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -554,7 +617,14 @@ void Application::Filter_Bartlett()
 ///////////////////////////////////////////////////////////////////////////////
 void Application::Filter_Gaussian()
 {
-
+	double filter[5][5] = {
+		{1/256., 4/256., 6/256., 4/256., 1/256.},
+		{4/256., 16/256., 24/256., 16/256., 4/256.},
+		{6/256., 24/256., 36/256., 24/256., 6/256.},
+		{4/256., 16/256., 24/256., 16/256., 4/256.},
+		{1/256., 4/256., 6/256., 4/256., 1/256.}
+	};
+	filtering(filter);
 }
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -562,9 +632,33 @@ void Application::Filter_Gaussian()
 //  operation.
 //
 ///////////////////////////////////////////////////////////////////////////////
-void Application::Filter_Gaussian_N( unsigned int N )
+void Application::Filter_Gaussian_N( unsigned int n )
 {
-
+	if(n<1) return;//如果輸入小於1就不做
+	//產生數列
+	double *gaussianMask = new double[n];
+	for(unsigned int i=0;i<n;++i){
+		//算組合(Combination)
+		gaussianMask[i]=1;
+		for(unsigned int j=(n-1);j>i;--j)
+			gaussianMask[i]*=j;
+		for(unsigned int j=(n-1)-i;j>0;--j)
+			gaussianMask[i]/=j;
+	}
+	//產生矩陣
+	double** filter = new double*[n];
+	for(unsigned int i=0;i<n;i++){
+		filter[i] = new double[n];
+		for(unsigned int j=0;j<n;j++)
+			filter[i][j]=gaussianMask[i]*gaussianMask[j]/pow(pow((double)2,(int)(n-1)),2);
+	}
+	//使用濾鏡
+	filtering(filter, n);
+	//把矩陣與數列刪掉
+	for(unsigned int i=0;i<n;i++)
+		delete[] filter[i];
+	delete[] filter;
+	delete[] gaussianMask;
 }
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -574,7 +668,32 @@ void Application::Filter_Gaussian_N( unsigned int N )
 ///////////////////////////////////////////////////////////////////////////////
 void Application::Filter_Edge()
 {
-
+	//轉灰階
+	unsigned char *rgb = this->To_RGB();
+	for (int i=0; i<img_height*img_width; i++)
+		img_data[i*4 + rr] =
+				img_data[i*4 + gg] =
+				img_data[i*4 + bb] =
+				0.30 * rgb[i*3 + rr] +
+				0.59 * rgb[i*3 + gg] +
+				0.11 * rgb[i*3 + bb];
+	delete[] rgb;
+	//用濾鏡
+	double filter[5][5] = {
+		{-1/256., -4/256., -6/256., -4/256., -1/256.},
+		{-4/256., -16/256., -24/256., -16/256., -4/256.},
+		{-6/256., -24/256., 220/256., -24/256., -6/256.},
+		{-4/256., -16/256., -24/256., -16/256., -4/256.},
+		{-1/256., -4/256., -6/256., -4/256., -1/256.}
+	};
+//	double filter[5][5] = {
+//		{0, 0, 0, 0, 0},
+//		{0, -1/16., -2/16., -1/16., 0},
+//		{0, -2/16., 12/16., -2/16., 0},
+//		{0, -1/16., -2/16., -1/16., 0},
+//		{0, 0, 0, 0, 0},
+//	};
+	filtering(filter);
 }
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -584,13 +703,14 @@ void Application::Filter_Edge()
 ///////////////////////////////////////////////////////////////////////////////
 void Application::Filter_Enhance()
 {
-	unsigned char *rgb = this->To_RGB();
-
-
-
-	delete[] rgb;
-	mImageDst = QImage(img_data, img_width, img_height, QImage::Format_ARGB32 );
-	renew();
+	double filter[5][5] = {
+		{-1/256., -4/256., -6/256., -4/256., -1/256.},
+		{-4/256., -16/256., -24/256., -16/256., -4/256.},
+		{-6/256., -24/256., 476/256., -24/256., -6/256.},
+		{-4/256., -16/256., -24/256., -16/256., -4/256.},
+		{-1/256., -4/256., -6/256., -4/256., -1/256.}
+	};
+	filtering(filter);
 }
 
 //------------------------Size------------------------

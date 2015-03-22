@@ -45,7 +45,7 @@ public:
 	void Filter_Box();
 	void Filter_Bartlett();
 	void Filter_Gaussian();
-	void Filter_Gaussian_N(unsigned int N);
+	void Filter_Gaussian_N(unsigned int n);
 	void Filter_Edge();
 	void Filter_Enhance();
 
