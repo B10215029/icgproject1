@@ -78,6 +78,8 @@ void Application::renew()
 
 	ui_instance->ui.label->clear();
     ui_instance->ui.label->setPixmap(QPixmap::fromImage(mImageDst));
+	ui_instance->ui.label->setFixedHeight(img_height);
+	ui_instance->ui.label->setFixedWidth(img_width);
 
 	std::cout << "Renew" << std::endl;
 }
@@ -722,6 +724,22 @@ void Application::Filter_Enhance()
 ///////////////////////////////////////////////////////////////////////////////
 void Application::Half_Size()
 {
+	unsigned char *rgb = this->To_RGB();
+	for(int i=0;i<img_height/2;i++){
+		for(int j=0;j<img_width/2;j++){
+			for(int k=0;k<3;k++){
+				img_data[(i*(img_width/2)+j)*4+k] = (
+						rgb[(i*2*img_width+j*2)*3+k] +
+						rgb[(i*2*img_width+j*2+1)*3+k] +
+						rgb[((i*2+1)*img_width+j*2)*3+k] +
+						rgb[((i*2+1)*img_width+j*2+1)*3+k])/4;
+			}
+			img_data[(i*(img_width/2)+j)*4 + aa] = WHITE;
+		}
+	}
+	img_width/=2;
+	img_height/=2;
+	delete[] rgb;
 	mImageDst = QImage(img_data, img_width, img_height, QImage::Format_ARGB32 );
 	renew();
 }
@@ -732,16 +750,44 @@ void Application::Half_Size()
 ///////////////////////////////////////////////////////////////////////////////
 void Application::Double_Size()
 {
-	mImageDst = QImage(img_data, img_width, img_height, QImage::Format_ARGB32 );
-	renew();
+	unsigned char *rgb = this->To_RGB();
+	img_data = new unsigned char[img_width*img_height*16];
+	for(int i=0;i<img_height;i++){
+		for(int j=0;j<img_width;j++){
+			for(int k=0;k<3;k++){
+				img_data[(i*img_width*4+j*2)*4+k] = rgb[(i*img_width+j)*3+k];
+				img_data[(i*img_width*4+j*2+1)*4+k] = rgb[(i*img_width+j)*3+k];
+				img_data[((i*2+1)*img_width*2+j*2)*4+k] = rgb[(i*img_width+j)*3+k];
+				img_data[((i*2+1)*img_width*2+j*2+1)*4+k] = rgb[(i*img_width+j)*3+k];
+			}
+			img_data[(i*img_width*4+j*2)*4 + aa] = WHITE;
+			img_data[(i*img_width*4+j*2+1)*4 + aa] = WHITE;
+			img_data[((i*2+1)*img_width*2+j*2)*4 + aa] = WHITE;
+			img_data[((i*2+1)*img_width*2+j*2+1)*4 + aa] = WHITE;
+		}
+	}
+	img_width*=2;
+	img_height*=2;
+	delete[] rgb;
+	Filter_Gaussian_N(3);
+	//mImageDst = QImage(img_data, img_width, img_height, QImage::Format_ARGB32 );
+	//renew();
 }
 ///////////////////////////////////////////////////////////////////////////////
 //
 //  resample_src for resize and rotate
 //
 ///////////////////////////////////////////////////////////////////////////////
-void Application::resample_src(int u, int v, float ww, unsigned char* rgba)
+void Application::resample_src(double u, double v, unsigned char* rgba)
 {
+//	unsigned char* img_dataSrc = mImageSrc.bits();
+//	int img_widthSrc = mImageSrc.width();
+//	int img_heightSrc = mImageSrc.height();
+
+//	double u2=img_widthSrc * u;
+//	double v2=img_heightSrc * v;
+
+
 
 }
 

@@ -54,7 +54,7 @@ public:
 	void Double_Size();
 	void Resize(float scale);
 	void Rotate(float angleDegrees);
-	void resample_src(int u, int v, float ww, unsigned char* rgba);
+	void resample_src(double u, double v, unsigned char* rgba);
 
 	// Composing
 	enum _CompImage { _over, _in, _out, _atop, _xor };
