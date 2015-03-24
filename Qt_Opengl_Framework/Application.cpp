@@ -942,13 +942,66 @@ void Application::Comp_Xor()
 ///////////////////////////////////////////////////////////////////////////////
 void Application::NPR_Paint()
 {
+	unsigned char *rgb = this->To_RGB();
+	for(int i=0;i<img_width*img_height;i++){
+		img_data[i*4+rr]=0;
+		img_data[i*4+gg]=0;
+		img_data[i*4+bb]=0;
+		img_data[i*4+aa]=WHITE;
+	}
+
+	NPR_Paint_Layer(img_data, rgb, 100);
+	//NPR_Paint_Layer(img_data, rgb, 50);
+	NPR_Paint_Layer(img_data, rgb, 5);
+
 	mImageDst = QImage(img_data, img_width, img_height, QImage::Format_ARGB32 );
 	renew();
 }
 
 void Application::NPR_Paint_Layer( unsigned char *tCanvas, unsigned char *tReferenceImage, int tBrushSize )
 {
-
+	int *randNum = new int[(img_height/tBrushSize+1)*(img_width/tBrushSize+1)];
+	int *randData = new int[(img_height/tBrushSize+1)*(img_width/tBrushSize+1)];
+	for(int i=0;i<(img_height/tBrushSize+1)*(img_width/tBrushSize+1);i++){
+		randData[i]=i;
+		randNum[i]=rand();
+	}
+	sort(randNum, 0, (img_height/tBrushSize+1)*(img_width/tBrushSize+1)-1,randData);
+	for(int ii=0;ii<img_height;ii+=tBrushSize){
+		for(int jj=0;jj<img_width;jj+=tBrushSize){
+			int i=(randData[(ii/tBrushSize)*(img_width/tBrushSize+1)+(jj/tBrushSize)]/(img_width/tBrushSize+1))*tBrushSize;
+			int j=(randData[(ii/tBrushSize)*(img_width/tBrushSize+1)+(jj/tBrushSize)]%(img_width/tBrushSize+1))*tBrushSize;
+			int sum[3]={};
+			for(int x=0;x<tBrushSize;x++){
+				for(int y=0;y<tBrushSize;y++){
+					if(i+x<img_height&&j+y<img_width){
+						sum[rr]+=tReferenceImage[((i+x)*img_width+j+y)*3+rr];
+						sum[gg]+=tReferenceImage[((i+x)*img_width+j+y)*3+gg];
+						sum[bb]+=tReferenceImage[((i+x)*img_width+j+y)*3+bb];
+					}
+				}
+			}
+			sum[rr]/=(i+tBrushSize<img_height)?tBrushSize:tBrushSize*2-img_height+i-1;
+			sum[gg]/=(i+tBrushSize<img_height)?tBrushSize:tBrushSize*2-img_height+i-1;
+			sum[bb]/=(i+tBrushSize<img_height)?tBrushSize:tBrushSize*2-img_height+i-1;
+			sum[rr]/=(j+tBrushSize<img_width)?tBrushSize:tBrushSize*2-img_width+j-1;
+			sum[gg]/=(j+tBrushSize<img_width)?tBrushSize:tBrushSize*2-img_width+j-1;
+			sum[bb]/=(j+tBrushSize<img_width)?tBrushSize:tBrushSize*2-img_width+j-1;
+			int rx=(((double)rand()/RAND_MAX-0.5)*tBrushSize*0.7);
+			int ry=(((double)rand()/RAND_MAX-0.5)*tBrushSize*0.7);
+			for(int x=-tBrushSize;x<tBrushSize*2;x++){
+				for(int y=-tBrushSize;y<tBrushSize*2;y++){
+					if(i+x+rx<img_height&&i+x+rx>=0&&j+y+ry<img_width&&j+y+ry>=0){
+						if((x-tBrushSize/2)*(x-tBrushSize/2)+(y-tBrushSize/2)*(y-tBrushSize/2)<(tBrushSize)*(tBrushSize)){
+							tCanvas[((i+x+rx)*img_width+j+y+ry)*4+rr]=sum[rr];
+							tCanvas[((i+x+rx)*img_width+j+y+ry)*4+gg]=sum[gg];
+							tCanvas[((i+x+rx)*img_width+j+y+ry)*4+bb]=sum[bb];
+						}
+					}
+				}
+			}
+		}
+	}
 }
 
 ///////////////////////////////////////////////////////////////////////////////
